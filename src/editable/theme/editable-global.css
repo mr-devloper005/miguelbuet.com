@@ -25,9 +25,11 @@ body {
 }
 
 .editable-site-root {
-  /* Yelp-style clean sans, used for both display and body. */
-  --editable-font-display: 'Inter', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  /* Warm editorial voice — IBM Plex Serif on display, Inter on body — matches
+     the reference site's paper-and-ink aesthetic. */
+  --editable-font-display: 'IBM Plex Serif', 'Fraunces', Georgia, serif;
   --editable-font-body: 'Inter', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --editable-font-mono: 'IBM Plex Mono', 'JetBrains Mono', ui-monospace, monospace;
   /* Premium easing curve used across every hover + transition. */
   --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
   font-family: var(--editable-font-body);
@@ -120,4 +122,77 @@ body {
 
 .article-content a {
   color: var(--slot4-accent-fill);
+}
+
+/*
+  Scroll-reveal system (IntersectionObserver-driven, CSS-only fallback).
+
+  Elements start visible by default so content never disappears if JS fails
+  or hydration is slow — the observer (see components/ScrollReveal.tsx) adds
+  `data-revealed="true"` once in view, which is what actually plays the
+  motion. Without JS, everything just renders in its resting state.
+*/
+.reveal-up {
+  opacity: 0;
+  transform: translate3d(0, 20px, 0);
+  transition: opacity 0.7s var(--ease-premium), transform 0.7s var(--ease-premium);
+}
+.reveal-up[data-revealed='true'] {
+  opacity: 1;
+  transform: none;
+}
+.reveal-up.reveal-fallback-visible {
+  opacity: 1;
+  transform: none;
+}
+
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translate3d(0, 16px, 0);
+  transition: opacity 0.6s var(--ease-premium), transform 0.6s var(--ease-premium);
+}
+.reveal-stagger[data-revealed='true'] > *,
+.reveal-stagger.reveal-fallback-visible > * {
+  opacity: 1;
+  transform: none;
+}
+.reveal-stagger > *:nth-child(1) { transition-delay: 0ms; }
+.reveal-stagger > *:nth-child(2) { transition-delay: 70ms; }
+.reveal-stagger > *:nth-child(3) { transition-delay: 140ms; }
+.reveal-stagger > *:nth-child(4) { transition-delay: 210ms; }
+.reveal-stagger > *:nth-child(5) { transition-delay: 280ms; }
+.reveal-stagger > *:nth-child(6) { transition-delay: 350ms; }
+.reveal-stagger > *:nth-child(n+7) { transition-delay: 420ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-up,
+  .reveal-stagger > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Smooth height accordion (grid-rows trick, no JS measuring needed). */
+.faq-panel-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s var(--ease-premium);
+}
+.faq-panel-wrap[data-open='true'] {
+  grid-template-rows: 1fr;
+}
+.faq-panel-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Snap rails used for category / featured-post carousels. */
+.snap-rail {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  .snap-rail {
+    scroll-behavior: auto;
+  }
 }

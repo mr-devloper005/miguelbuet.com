@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowUpRight, BriefcaseBusiness, ChevronDown, Download, FileText, Globe, MapPin, Phone, Search, Star, UserRound } from 'lucide-react'
+import { ArrowUpRight, BriefcaseBusiness, ChevronDown, ChevronLeft, ChevronRight, Download, FileText, Globe, MapPin, Phone, Star, UserRound } from 'lucide-react'
 import { buildTaskMetadata } from '@/lib/seo'
 import { CATEGORY_OPTIONS, normalizeCategory } from '@/lib/categories'
 import { fetchPaginatedTaskPosts, buildPostUrl } from '@/lib/task-data'
@@ -9,6 +9,8 @@ import { taskPageMetadata } from '@/config/site.content'
 import { taskPageVoices } from '@/editable/content/task-pages.content'
 import { EditableSiteShell } from '@/editable/shell/EditableSiteShell'
 import { getTaskTheme, taskThemeStyle } from '@/editable/theme/task-themes'
+import { TaskEmptyState } from '@/editable/components/EmptyStates'
+import { Ads } from '@/lib/ads'
 
 export const revalidate = 3
 
@@ -145,18 +147,33 @@ export function TaskArchiveView({ task, posts, pagination, category, basePath }:
               {posts.map((post, index) => <ArchivePostCard key={post.id || post.slug} post={post} task={task} basePath={basePath} index={index} />)}
             </div>
           ) : (
-            <div className="mx-auto max-w-xl rounded-[var(--tk-radius)] border border-dashed border-[var(--tk-line)] bg-[var(--tk-surface)] px-8 py-16 text-center">
-              <Search className="mx-auto h-7 w-7 text-[var(--tk-muted)]" />
-              <h2 className="editable-display mt-5 text-2xl font-semibold tracking-[-0.02em]">Nothing here yet</h2>
-              <p className="mt-2 text-sm leading-6 text-[var(--tk-muted)]">Try another category, or check back after new {label.toLowerCase()} are published.</p>
-            </div>
+            <TaskEmptyState taskLabel={label.toLowerCase()} className="mx-auto max-w-xl text-[var(--tk-text)]" />
           )}
 
+          {task === 'listing' && posts.length >= 4 ? (
+            <div className="mt-12">
+              <Ads slot="in-feed" size="banner" showLabel className="mx-auto w-full" />
+            </div>
+          ) : null}
+          {task === 'sbm' && posts.length >= 4 ? (
+            <div className="mt-12">
+              <Ads slot="header" size="banner" showLabel className="mx-auto w-full" />
+            </div>
+          ) : null}
+
           {posts.length ? (
-            <nav className="mt-16 flex items-center justify-center gap-3 text-sm">
-              {pagination.hasPrevPage ? <Link href={pageHref(basePath, category, page - 1)} className="rounded-full border border-[var(--tk-line)] px-5 py-2.5 font-medium transition hover:border-[var(--tk-accent)]">Previous</Link> : null}
-              <span className="rounded-full border border-[var(--tk-line)] bg-[var(--tk-surface)] px-5 py-2.5 font-medium text-[var(--tk-muted)]">Page {page} of {pagination.totalPages || 1}</span>
-              {pagination.hasNextPage ? <Link href={pageHref(basePath, category, page + 1)} className="rounded-full border border-[var(--tk-line)] px-5 py-2.5 font-medium transition hover:border-[var(--tk-accent)]">Next</Link> : null}
+            <nav className="mt-16 flex items-center justify-center gap-2 text-sm">
+              {pagination.hasPrevPage ? (
+                <Link href={pageHref(basePath, category, page - 1)} className="inline-flex items-center gap-1.5 rounded-full border border-[var(--tk-line)] bg-[var(--tk-surface)] px-5 py-2.5 font-semibold transition hover:border-[var(--tk-accent)] hover:text-[var(--tk-accent)]">
+                  <ChevronLeft className="h-4 w-4" /> Previous
+                </Link>
+              ) : null}
+              <span className="rounded-full bg-[var(--tk-accent)] px-5 py-2.5 font-semibold text-[var(--tk-on-accent)]">Page {page} of {pagination.totalPages || 1}</span>
+              {pagination.hasNextPage ? (
+                <Link href={pageHref(basePath, category, page + 1)} className="inline-flex items-center gap-1.5 rounded-full border border-[var(--tk-line)] bg-[var(--tk-surface)] px-5 py-2.5 font-semibold transition hover:border-[var(--tk-accent)] hover:text-[var(--tk-accent)]">
+                  Next <ChevronRight className="h-4 w-4" />
+                </Link>
+              ) : null}
             </nav>
           ) : null}
         </section>
@@ -305,16 +322,24 @@ function ImageArchiveCard({ post, href, index }: { post: SitePost; href: string;
 
 function BookmarkArchiveCard({ post, href, index }: { post: SitePost; href: string; index: number }) {
   const website = getField(post, ['website', 'url', 'link'])
+  const category = getCategory(post, 'Bookmark')
   return (
     <Link href={href} className={`${cardBase} flex gap-4 p-6`}>
       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--tk-accent-soft)] text-[var(--tk-accent)]">
         <Globe className="h-5 w-5" />
       </div>
       <div className="min-w-0 flex-1">
-        <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--tk-muted)]">Saved · {String(index + 1).padStart(2, '0')}</span>
+        <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--tk-accent)]">
+          <span>{category}</span>
+          <span className="text-[var(--tk-muted)]">· No. {String(index + 1).padStart(2, '0')}</span>
+        </div>
         <h2 className="editable-display mt-1.5 text-lg font-semibold leading-snug tracking-[-0.02em]">{post.title}</h2>
         <p className="mt-2 line-clamp-2 text-sm leading-6 text-[var(--tk-muted)]">{getSummary(post)}</p>
-        {website ? <p className="mt-3 truncate text-xs font-medium text-[var(--tk-accent)]">{cleanDomain(website)}</p> : null}
+        {website ? (
+          <p className="mt-3 flex items-center gap-1.5 truncate text-xs font-medium text-[var(--tk-accent)]">
+            {cleanDomain(website)} <ArrowUpRight className="h-3.5 w-3.5 shrink-0" />
+          </p>
+        ) : null}
       </div>
     </Link>
   )
