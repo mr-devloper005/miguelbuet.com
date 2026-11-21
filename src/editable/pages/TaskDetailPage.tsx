@@ -465,7 +465,6 @@ function BookmarkDetail({ post, related }: { post: SitePost; related: SitePost[]
   const category = getField(post, ['category']) || (post.tags?.[0] ?? '')
   const domain = website ? cleanDomainString(website) : ''
   const savedBy = getField(post, ['author', 'curator', 'submittedBy']) || post.authorName || 'Community'
-  const savedAt = post.publishedAt || post.createdAt || ''
   const readingTime = estimateReadingMinutes(getBody(post))
   const shareUrl = shareUrlFor('sbm', post.slug)
 
@@ -548,12 +547,6 @@ function BookmarkDetail({ post, related }: { post: SitePost; related: SitePost[]
                   <span className="text-[var(--tk-muted)]">Curated by</span>
                   <span className="font-semibold text-[var(--tk-text)]">{savedBy}</span>
                 </div>
-                {savedAt ? (
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-[var(--tk-muted)]">Saved</span>
-                    <span className="font-semibold text-[var(--tk-text)]">{formatDateShort(savedAt)}</span>
-                  </div>
-                ) : null}
                 {category ? (
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-[var(--tk-muted)]">Category</span>
